@@ -1,14 +1,21 @@
 extern crate clap;
 use clap::{App, Arg, SubCommand};
 
-use ansi_term;
+extern crate html5ever;
 
+use ansi_term;
 use html2text;
 use reqwest;
 use scraper;
 
+use std::default::Default;
 use std::io;
 use std::io::Read;
+use std::iter::repeat;
+use std::string::String;
+
+use html5ever::rcdom::{Handle, NodeData, RcDom};
+use html5ever::tendril::TendrilSink;
 
 fn get_content(name: &str) -> String {
     if name == "stdin" {
@@ -24,6 +31,48 @@ fn get_content(name: &str) -> String {
             .text()
             .unwrap();
     }
+}
+
+fn walk(indent: usize, handle: &Handle) {
+    let node = handle;
+    let tab = repeat(" ").take(indent).collect::<String>();
+    match node.data {
+        NodeData::Element {
+            ref name,
+            ref attrs,
+            ..
+        } => {
+            println!(
+                "{}{}: {}",
+                tab,
+                &ansi_term::Color::Cyan.paint("tag"),
+                &ansi_term::Color::Red.paint(name.local.to_string())
+            );
+            for attr in attrs.borrow().iter() {
+                println!(
+                    "{} {}: {}",
+                    tab,
+                    &ansi_term::Color::Blue.paint(attr.name.local.to_string()),
+                    &ansi_term::Color::Green.paint(attr.value.to_string()),
+                );
+            }
+        }
+
+        NodeData::ProcessingInstruction { .. } => unreachable!(),
+        _ => {}
+    }
+
+    for child in node.children.borrow().iter() {
+        walk(indent + 2, child);
+    }
+}
+
+fn print_dom(html: &str) {
+    let dom = html5ever::parse_document(RcDom::default(), Default::default())
+        .from_utf8()
+        .read_from(&mut html.as_bytes())
+        .unwrap();
+    walk(0, &dom.document);
 }
 
 fn main() {
@@ -70,12 +119,6 @@ fn main() {
             SubCommand::with_name("get")
                 .about("prints COUNT found results")
                 .arg(
-                    Arg::with_name("show-dom")
-                        .short("s")
-                        .long("show-dom")
-                        .help("show document object model structure of the page"),
-                )
-                .arg(
                     Arg::with_name("SELECTOR")
                         .help("which css selector")
                         .required(true)
@@ -115,13 +158,13 @@ fn main() {
                     let attr = matches.value_of("attribute").unwrap();
                     println!("{}", elem.value().attr(attr).unwrap_or(""));
                 } else {
-                    unimplemented!();
+                    print_dom(&elem.html());
                 }
             } else {
                 if !matches.is_present("show-dom") {
                     println!("{}", elem.text().collect::<Vec<_>>().join(""));
                 } else {
-                    unimplemented!();
+                    print_dom(&elem.html());
                 }
             }
         }
@@ -132,7 +175,11 @@ fn main() {
                 html2text::from_read(&mut comment.as_bytes(), width.parse().unwrap())
             );
         } else {
-            unimplemented!();
+            let document = scraper::Html::parse_document(&comment);
+            let selector = scraper::Selector::parse("body").unwrap();
+            for elem in document.select(&selector) {
+                print_dom(&elem.html());
+            }
         }
     }
 }
