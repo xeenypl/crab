@@ -50,5 +50,37 @@ fn main() {
                 .required(true)
                 .index(1),
         )
+        .subcommand(
+            SubCommand::with_name("get")
+                .about("prints COUNT found results")
+                .arg(
+                    Arg::with_name("show-dom")
+                        .short("s")
+                        .long("show-dom")
+                        .help("show document object model structure of the page"),
+                )
+                .arg(
+                    Arg::with_name("SELECTOR")
+                        .help("which css selector")
+                        .required(true)
+                        .index(1),
+                )
+                .arg(
+                    Arg::with_name("limit")
+                        .short("l")
+                        .long("limit")
+                        .value_name("LIMIT")
+                        .help("how meny result.")
+                        .takes_value(true),
+                )
+                .arg(
+                    Arg::with_name("attribute")
+                        .short("a")
+                        .long("attribute")
+                        .value_name("ATTRIBUTE")
+                        .help("which html attribute.")
+                        .takes_value(true),
+                ),
+        )
         .get_matches();
 }
