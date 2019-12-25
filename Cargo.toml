@@ -1,0 +1,15 @@
+[package]
+name = "crab"
+version = "0.1.0"
+authors = ["xeeny <xeeny@wp.pl>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = "2.31.2"
+ansi_term = "0.12"
+html2text = "0.1.6"
+html5ever = "*"
+reqwest = "0.9.24"
+scraper = "0.11.0"
