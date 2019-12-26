@@ -7,9 +7,11 @@ use reqwest;
 use scraper;
 
 use std::default::Default;
+use std::fs;
 use std::io;
 use std::io::Read;
 use std::iter::repeat;
+use std::path::Path;
 use std::string::String;
 
 use html5ever::rcdom::{Handle, NodeData, RcDom};
@@ -23,6 +25,8 @@ fn get_content(name: &str) -> String {
             .read_to_string(&mut buf)
             .expect(&ansi_term::Color::Red.paint(format!("problen with open {}.", name)));
         return buf;
+    } else if Path::new(name).exists() {
+        return fs::read_to_string(name).expect(&format!("problem with {}", name));
     } else {
         return reqwest::get(name)
             .expect(&format!("felie reqwest to {}", name))
