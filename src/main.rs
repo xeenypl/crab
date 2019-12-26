@@ -1,8 +1,6 @@
 extern crate clap;
 use clap::{App, Arg, SubCommand};
 
-extern crate html5ever;
-
 use ansi_term;
 use html2text;
 use reqwest;
@@ -58,7 +56,6 @@ fn walk(indent: usize, handle: &Handle) {
             }
         }
 
-        NodeData::ProcessingInstruction { .. } => unreachable!(),
         _ => {}
     }
 
