@@ -17,7 +17,7 @@ use std::string::String;
 use html5ever::rcdom::{Handle, NodeData, RcDom};
 use html5ever::tendril::TendrilSink;
 
-fn get_content(name: &str) -> String {
+fn get_content(name: &str, post: Option<&str>) -> String {
     if name == "stdin" {
         let mut buf = String::new();
         io::stdin()
@@ -28,10 +28,23 @@ fn get_content(name: &str) -> String {
     } else if Path::new(name).exists() {
         return fs::read_to_string(name).expect(&format!("problem with {}", name));
     } else {
-        return reqwest::get(name)
-            .expect(&format!("felie reqwest to {}", name))
-            .text()
-            .unwrap();
+        match post {
+            Some(s) => {
+                let c = reqwest::Client::new();
+                let mut res = c
+                    .post(name)
+                    .form(s)
+                    .send()
+                    .expect(&format!("failed request to {}", name));
+                return res.text().unwrap();
+            }
+            None => {
+                return reqwest::get(name)
+                    .expect(&format!("failed request to {}", name))
+                    .text()
+                    .unwrap()
+            }
+        }
     }
 }
 
@@ -146,7 +159,7 @@ fn main() {
 
     let soures: String = matches.value_of("URL").unwrap().to_string();
     let width: String = matches.value_of("width").unwrap_or("80").to_owned();
-    let comment: String = get_content(&soures);
+    let comment: String = get_content(&soures, matches.value_of("post"));
 
     if let Some(matches) = matches.subcommand_matches("get") {
         let selector: String = matches.value_of("SELECTOR").unwrap().to_string();
