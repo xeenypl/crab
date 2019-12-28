@@ -166,7 +166,8 @@ fn main() {
         let document = scraper::Html::parse_document(&comment);
         let selector = scraper::Selector::parse(&selector)
             .expect(&ansi_term::Color::Red.paint(&format!("wrong selector:\n\t {}", &selector)));
-        for elem in document.select(&selector) {
+        let mut limit: usize = matches.value_of("limit").unwrap_or("100").parse().unwrap();
+        'print_loop: for elem in document.select(&selector) {
             if matches.is_present("attribute") {
                 if !matches.is_present("show-dom") {
                     let attr = matches.value_of("attribute").unwrap();
@@ -180,6 +181,10 @@ fn main() {
                 } else {
                     print_dom(&elem.html());
                 }
+            }
+            limit -= 1;
+            if limit == 0 {
+                break 'print_loop;
             }
         }
     } else {
