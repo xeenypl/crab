@@ -5,8 +5,10 @@ extern crate html5ever;
 extern crate markup5ever_rcdom as rcdom;
 
 use ansi_term;
-use reqwest;
 use scraper;
+
+use reqwest;
+use reqwest::RequestBuilder;
 
 use std::default::Default;
 use std::fs;
@@ -23,37 +25,37 @@ use rcdom::NodeData;
 use rcdom::RcDom;
 
 fn get_content(name: &str, post: Option<&str>) -> String {
+    let error_prefix = &ansi_term::Color::Red.paint("[Connection Errer]: ");
     if name == "stdin" {
         let mut buf = String::new();
         io::stdin()
             .lock()
             .read_to_string(&mut buf)
-            .expect(&ansi_term::Color::Red.paint(format!("problen with open {}.", name)));
+            .expect(&format!("{}problen with open stdin.", error_prefix));
         return buf;
     } else if Path::new(name).exists() {
-        return fs::read_to_string(name).expect(&format!("problem with {}", name));
+        return fs::read_to_string(name)
+            .expect(&format!("{}problen with open {}.", error_prefix, name));
     } else {
+        let c = reqwest::Client::new();
+        let res: RequestBuilder;
         match post {
             Some(s) => {
-                let c = reqwest::Client::new();
-                let mut res = c
-                    .post(name)
-                    .form(s)
-                    .send()
-                    .expect(&format!("failed request to {}", name));
-                return res.text().unwrap();
+                res = c.post(name).form(s);
             }
             None => {
-                return reqwest::get(name)
-                    .expect(&format!("failed request to {}", name))
-                    .text()
-                    .unwrap()
+                res = c.get(name);
             }
         }
+        return res
+            .send()
+            .expect(&format!("{}failed request to {}", error_prefix, name))
+            .text()
+            .expect(&format!("{}failed request to text", error_prefix));
     }
 }
 
-fn walk(indent: usize, handle: &Handle) {
+fn walk(indent: usize, handle: &Handle, no_colors: bool) {
     let node = handle;
     let tab = repeat(" ").take(indent).collect::<String>();
     match node.data {
@@ -162,6 +164,10 @@ fn main() {
         let document = scraper::Html::parse_document(&comment);
         let selector = scraper::Selector::parse(&selector)
             .expect(&ansi_term::Color::Red.paint(&format!("wrong selector:\n\t {}", &selector)));
+        let selector = scraper::Selector::parse(&selector).expect(&format!(
+            "{}wrong selector:\n\t {}",
+            error_prefix, &selector
+        ));
         let mut limit: usize = matches.value_of("limit").unwrap_or("100").parse().unwrap();
         'print_loop: for elem in document.select(&selector) {
             if matches.is_present("attribute") {
