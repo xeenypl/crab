@@ -1,6 +1,9 @@
 extern crate clap;
 use clap::{App, Arg, SubCommand};
 
+extern crate html5ever;
+extern crate markup5ever_rcdom as rcdom;
+
 use ansi_term;
 use reqwest;
 use scraper;
@@ -13,8 +16,11 @@ use std::iter::repeat;
 use std::path::Path;
 use std::string::String;
 
-use html5ever::rcdom::{Handle, NodeData, RcDom};
+use html5ever::parse_document;
 use html5ever::tendril::TendrilSink;
+use rcdom::Handle;
+use rcdom::NodeData;
+use rcdom::RcDom;
 
 fn get_content(name: &str, post: Option<&str>) -> String {
     if name == "stdin" {
@@ -81,7 +87,7 @@ fn walk(indent: usize, handle: &Handle) {
 }
 
 fn print_dom(html: &str) {
-    let dom = html5ever::parse_document(RcDom::default(), Default::default())
+    let dom = parse_document(RcDom::default(), Default::default())
         .from_utf8()
         .read_from(&mut html.as_bytes())
         .unwrap();
@@ -143,7 +149,6 @@ fn main() {
         .get_matches();
 
     let soures: String = matches.value_of("URL").unwrap().to_string();
-    let width: String = matches.value_of("width").unwrap_or("80").to_owned();
     let comment: String = get_content(&soures, matches.value_of("post"));
 
     if let Some(matches) = matches.subcommand_matches("get") {
