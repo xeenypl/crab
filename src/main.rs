@@ -2,7 +2,6 @@ extern crate clap;
 use clap::{App, Arg, SubCommand};
 
 use ansi_term;
-use html2text;
 use reqwest;
 use scraper;
 
@@ -102,20 +101,6 @@ fn main() {
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name("width")
-                .short("w")
-                .long("width")
-                .value_name("WIDTH")
-                .help("how wide display is")
-                .takes_value(true),
-        )
-        .arg(
-            Arg::with_name("show-dom")
-                .short("s")
-                .long("show-dom")
-                .help("show document object model structure of the page"),
-        )
-        .arg(
             Arg::with_name("post")
                 .short("p")
                 .long("post")
@@ -188,17 +173,10 @@ fn main() {
             }
         }
     } else {
-        if !matches.is_present("show-dom") {
-            println!(
-                "{}",
-                html2text::from_read(&mut comment.as_bytes(), width.parse().unwrap())
-            );
-        } else {
-            let document = scraper::Html::parse_document(&comment);
-            let selector = scraper::Selector::parse("body").unwrap();
-            for elem in document.select(&selector) {
-                print_dom(&elem.html());
-            }
+        let document = scraper::Html::parse_document(&comment);
+        let selector = scraper::Selector::parse("body").unwrap();
+        for elem in document.select(&selector) {
+            print_dom(&elem.html());
         }
     }
 }
