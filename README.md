@@ -6,4 +6,4 @@ crab is command line web scraping tool written in rust
   - showing DOM structure in tree like form
   - support HTTP/POST
 ## planed features
-  - support cookeis
+  - support for json
