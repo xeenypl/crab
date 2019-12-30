@@ -64,19 +64,31 @@ fn walk(indent: usize, handle: &Handle, no_colors: bool) {
             ref attrs,
             ..
         } => {
-            println!(
-                "{}{}: {}",
-                tab,
-                &ansi_term::Color::Cyan.paint("tag"),
-                &ansi_term::Color::Red.paint(name.local.to_string())
-            );
-            for attr in attrs.borrow().iter() {
+            if no_colors {
+                println!("{}{}: {}", tab, "tag", name.local.to_string());
+                for attr in attrs.borrow().iter() {
+                    println!(
+                        "{} {}: {}",
+                        tab,
+                        attr.name.local.to_string(),
+                        attr.value.to_string(),
+                    );
+                }
+            } else {
                 println!(
-                    "{} {}: {}",
+                    "{}{}: {}",
                     tab,
-                    &ansi_term::Color::Blue.paint(attr.name.local.to_string()),
-                    &ansi_term::Color::Green.paint(attr.value.to_string()),
+                    &ansi_term::Color::Cyan.paint("tag"),
+                    &ansi_term::Color::Red.paint(name.local.to_string())
                 );
+                for attr in attrs.borrow().iter() {
+                    println!(
+                        "{} {}: {}",
+                        tab,
+                        &ansi_term::Color::Blue.paint(attr.name.local.to_string()),
+                        &ansi_term::Color::Green.paint(attr.value.to_string()),
+                    );
+                }
             }
         }
 
@@ -84,30 +96,22 @@ fn walk(indent: usize, handle: &Handle, no_colors: bool) {
     }
 
     for child in node.children.borrow().iter() {
-        walk(indent + 2, child);
+        walk(indent + 2, child, no_colors);
     }
 }
 
-fn print_dom(html: &str) {
+fn print_dom(html: &str, no_colors: bool) {
     let dom = parse_document(RcDom::default(), Default::default())
         .from_utf8()
         .read_from(&mut html.as_bytes())
         .unwrap();
-    walk(0, &dom.document);
+    walk(0, &dom.document, no_colors);
 }
 
 fn main() {
     let matches = App::new("crab - cli web scraper")
         .version("0.1.0")
         .author("xeeny <me@xeeny.pl>")
-        .arg(
-            Arg::with_name("cookies")
-                .short("c")
-                .long("cookies")
-                .value_name("COOKIES_FILE")
-                .help("Get localization of cookies file")
-                .takes_value(true),
-        )
         .arg(
             Arg::with_name("post")
                 .short("p")
@@ -121,6 +125,12 @@ fn main() {
                 .help("URL to site")
                 .required(true)
                 .index(1),
+        )
+        .arg(
+            Arg::with_name("no-colors")
+                .short("-n")
+                .long("no-colors")
+                .help("show DOM without colors"),
         )
         .subcommand(
             SubCommand::with_name("get")
@@ -151,19 +161,26 @@ fn main() {
                     Arg::with_name("row")
                         .short("r")
                         .long("row")
-                        .help("Sets the level of verbosity"),
+                        .help("print row content of tag"),
+                )
+                .arg(
+                    Arg::with_name("no-colors")
+                        .short("-n")
+                        .long("no-colors")
+                        .help("show DOM without colors"),
                 ),
         )
         .get_matches();
 
     let soures: String = matches.value_of("URL").unwrap().to_string();
     let comment: String = get_content(&soures, matches.value_of("post"));
+    let no_colors: bool = matches.is_present("no-colors");
 
     if let Some(matches) = matches.subcommand_matches("get") {
+        let error_prefix = &ansi_term::Color::Red.paint("[Selector Errer]: ");
+        let no_colors: bool = matches.is_present("no-colors") || no_colors;
         let selector: String = matches.value_of("SELECTOR").unwrap().to_string();
         let document = scraper::Html::parse_document(&comment);
-        let selector = scraper::Selector::parse(&selector)
-            .expect(&ansi_term::Color::Red.paint(&format!("wrong selector:\n\t {}", &selector)));
         let selector = scraper::Selector::parse(&selector).expect(&format!(
             "{}wrong selector:\n\t {}",
             error_prefix, &selector
@@ -177,7 +194,7 @@ fn main() {
                 if matches.is_present("row") {
                     println!("{}", elem.text().collect::<Vec<_>>().join(""));
                 } else {
-                    print_dom(&elem.inner_html());
+                    print_dom(&elem.inner_html(), no_colors);
                 }
             }
             limit -= 1;
@@ -189,7 +206,7 @@ fn main() {
         let document = scraper::Html::parse_document(&comment);
         let selector = scraper::Selector::parse("body").unwrap();
         for elem in document.select(&selector) {
-            print_dom(&elem.html());
+            print_dom(&elem.inner_html(), no_colors);
         }
     }
 }
