@@ -1,5 +1,5 @@
 # crab
-[![crates.io](https://img.shields.io/crates/v/html5ever.svg)](https://crates.io/crates/crab)
+[![crates.io](https://img.shields.io/crates/v/crab.svg)](https://crates.io/crates/crab)
 
 crab is command line web scraping tool written in rust
 ## features
