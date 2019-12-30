@@ -144,6 +144,12 @@ fn main() {
                         .value_name("ATTRIBUTE")
                         .help("which html attribute.")
                         .takes_value(true),
+                )
+                .arg(
+                    Arg::with_name("row")
+                        .short("r")
+                        .long("row")
+                        .help("Sets the level of verbosity"),
                 ),
         )
         .get_matches();
@@ -159,17 +165,13 @@ fn main() {
         let mut limit: usize = matches.value_of("limit").unwrap_or("100").parse().unwrap();
         'print_loop: for elem in document.select(&selector) {
             if matches.is_present("attribute") {
-                if !matches.is_present("show-dom") {
-                    let attr = matches.value_of("attribute").unwrap();
-                    println!("{}", elem.value().attr(attr).unwrap_or(""));
-                } else {
-                    print_dom(&elem.html());
-                }
+                let attr = matches.value_of("attribute").unwrap();
+                println!("{}", elem.value().attr(attr).unwrap_or(""));
             } else {
-                if !matches.is_present("show-dom") {
+                if matches.is_present("row") {
                     println!("{}", elem.text().collect::<Vec<_>>().join(""));
                 } else {
-                    print_dom(&elem.html());
+                    print_dom(&elem.inner_html());
                 }
             }
             limit -= 1;
