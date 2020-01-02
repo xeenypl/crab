@@ -64,6 +64,15 @@ fn walk(indent: usize, handle: &Handle, no_colors: bool) {
             ref attrs,
             ..
         } => {
+            if name.local.to_string() == "body"
+                || name.local.to_string() == "head"
+                || name.local.to_string() == "html"
+            {
+                for child in node.children.borrow().iter() {
+                    walk(indent, child, no_colors);
+                }
+                return;
+            }
             if no_colors {
                 println!("{}{}: {}", tab, "tag", name.local.to_string());
                 for attr in attrs.borrow().iter() {
@@ -90,13 +99,16 @@ fn walk(indent: usize, handle: &Handle, no_colors: bool) {
                     );
                 }
             }
+            for child in node.children.borrow().iter() {
+                walk(indent + 2, child, no_colors);
+            }
         }
 
-        _ => {}
-    }
-
-    for child in node.children.borrow().iter() {
-        walk(indent + 2, child, no_colors);
+        _ => {
+            for child in node.children.borrow().iter() {
+                walk(indent, child, no_colors);
+            }
+        }
     }
 }
 
