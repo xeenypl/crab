@@ -122,7 +122,7 @@ fn print_dom(html: &str, no_colors: bool) {
 
 fn main() {
     let matches = App::new("crab - cli web scraper")
-        .version("0.2.0")
+        .version("0.2.1")
         .author("xeeny <me@xeeny.pl>")
         .arg(
             Arg::with_name("post")
