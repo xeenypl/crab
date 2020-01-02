@@ -206,7 +206,7 @@ fn main() {
                 if matches.is_present("row") {
                     println!("{}", elem.text().collect::<Vec<_>>().join(""));
                 } else {
-                    print_dom(&elem.inner_html(), no_colors);
+                    print_dom(&elem.html(), no_colors);
                 }
             }
             limit -= 1;
