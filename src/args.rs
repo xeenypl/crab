@@ -1,4 +1,7 @@
-use clap::{App, Arg, SubCommand};
+extern crate clap;
+use clap::App;
+use clap::Arg;
+use clap::SubCommand;
 
 pub fn get_args() -> clap::ArgMatches<'static> {
     return App::new("crab - cli web scraper")
