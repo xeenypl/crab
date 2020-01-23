@@ -1,6 +1,6 @@
 [package]
 name = "crab"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["xeeny <xeeny@wp.pl>"]
 edition = "2018"
 license-file = "LICENSE"
@@ -17,3 +17,4 @@ markup5ever_rcdom = "0.1.0"
 html5ever = "0.25.1"
 reqwest = "0.9.24"
 scraper = "0.11.0"
+url = "2.1.1"

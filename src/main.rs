@@ -1,6 +1,8 @@
 use ansi_term;
 use scraper;
 
+use url::Url;
+
 mod args;
 mod get_content;
 mod print_dom;
@@ -23,8 +25,15 @@ fn main() {
         let mut limit: usize = matches.value_of("limit").unwrap_or("100").parse().unwrap();
         'print_loop: for elem in document.select(&selector) {
             if matches.is_present("attribute") {
-                let attr = matches.value_of("attribute").unwrap();
-                println!("{}", elem.value().attr(attr).unwrap_or(""));
+                if matches.is_present("expend-url") {
+                    let attr = matches.value_of("attribute").unwrap();
+                    let val = elem.value().attr(attr).unwrap_or("");
+                    let urla = Url::parse(&soures).unwrap();
+                    println!("{}", urla.join(val).unwrap());
+                } else {
+                    let attr = matches.value_of("attribute").unwrap();
+                    println!("{}", elem.value().attr(attr).unwrap_or(""));
+                }
             } else {
                 if matches.is_present("row") {
                     println!("{}", elem.text().collect::<Vec<_>>().join(""));

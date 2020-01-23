@@ -5,7 +5,7 @@ use clap::SubCommand;
 
 pub fn get_args() -> clap::ArgMatches<'static> {
     return App::new("crab - cli web scraper")
-        .version("0.2.1")
+        .version("0.2.2")
         .author("xeeny <me@xeeny.pl>")
         .arg(
             Arg::with_name("post")
@@ -57,6 +57,12 @@ pub fn get_args() -> clap::ArgMatches<'static> {
                         .short("r")
                         .long("row")
                         .help("print row content of tag"),
+                )
+                .arg(
+                    Arg::with_name("expend-url")
+                        .short("e")
+                        .long("expend-url")
+                        .help("printing expending url instead a relative path"),
                 )
                 .arg(
                     Arg::with_name("no-colors")

@@ -185,7 +185,7 @@ checksum = "e7ca8a5221364ef15ce201e8ed2f609fc312682a8f4e0e3d4aa5879764e0fa3b"
 
 [[package]]
 name = "crab"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "ansi_term 0.12.1",
  "clap",
@@ -193,6 +193,7 @@ dependencies = [
  "markup5ever_rcdom",
  "reqwest",
  "scraper",
+ "url 2.1.1",
 ]
 
 [[package]]
@@ -1050,7 +1051,7 @@ dependencies = [
  "idna 0.2.0",
  "lazy_static",
  "regex",
- "url 2.1.0",
+ "url 2.1.1",
 ]
 
 [[package]]
@@ -1840,9 +1841,9 @@ dependencies = [
 
 [[package]]
 name = "url"
-version = "2.1.0"
+version = "2.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "75b414f6c464c879d7f9babf951f23bc3743fb7313c081b2e6ca719067ea9d61"
+checksum = "829d4a8476c35c9bf0bbce5a3b23f4106f79728039b726d292bb93bc106787cb"
 dependencies = [
  "idna 0.2.0",
  "matches",
