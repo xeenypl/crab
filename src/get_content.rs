@@ -1,6 +1,3 @@
-use reqwest::RequestBuilder;
-
-use reqwest;
 use std::fs;
 use std::io;
 use std::io::Read;
@@ -20,20 +17,10 @@ pub fn get(name: &str, post: Option<&str>) -> String {
         return fs::read_to_string(name)
             .expect(&format!("{}problen with open {}.", error_prefix, name));
     } else {
-        let c = reqwest::Client::new();
-        let res: RequestBuilder;
-        match post {
-            Some(s) => {
-                res = c.post(name).form(s);
-            }
-            None => {
-                res = c.get(name);
-            }
+        let rep = attohttpc::get(name).send().expect("Request fail!\n");
+        if rep.is_success() {
+             return rep.text().expect("");
         }
-        return res
-            .send()
-            .expect(&format!("{}failed request to {}", error_prefix, name))
-            .text()
-            .expect(&format!("{}failed request to text", error_prefix));
+        panic!("Request failed!");
     }
 }
